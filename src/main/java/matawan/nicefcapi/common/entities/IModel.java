@@ -10,6 +10,8 @@ import java.io.Serializable;
 
 
 @MappedSuperclass
+@Getter
+@Setter
 public abstract class IModel implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

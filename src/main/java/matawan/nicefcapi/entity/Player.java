@@ -11,7 +11,6 @@ import matawan.nicefcapi.common.entities.IModel;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
 public class Player extends IModel {
     String name;
     String position;
