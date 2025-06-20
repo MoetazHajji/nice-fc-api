@@ -10,6 +10,8 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
+@Setter
 public class TeamDto implements Serializable {
     private Long id;
     private String name;

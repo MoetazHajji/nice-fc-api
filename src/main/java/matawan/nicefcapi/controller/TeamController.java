@@ -17,6 +17,10 @@ public class TeamController {
 
     @PostMapping
     public TeamDto create(@RequestBody TeamDto request) {
+        System.out.println("team: " + request);
+        System.out.println("team name: " + request.getName());
+        System.out.println("acronym: " + request.getAcronym());
+        System.out.println("team budget: " + request.getBudget());
         System.out.println("players controller: " + request.getPlayers());
         return teamService.save(request);
     }

@@ -26,11 +26,16 @@ public class TeamService implements ITeamService {
 
     @Override
     public TeamDto save(TeamDto dto) {
-        Team entity = teamMapper.toEntity(dto);
-        if (entity.getPlayers() != null) {
-            entity.getPlayers().forEach(p -> p.setTeam(entity));
+        Team team = teamMapper.toEntity(dto);
+        System.out.println("team: " + dto);
+        System.out.println("team name: " + team.getName());
+        System.out.println("acronym: " + team.getAcronym());
+        System.out.println("team budget: " + team.getBudget());
+        if (team.getPlayers() != null) {
+            System.out.println("team players : " + team.getPlayers());
+            team.getPlayers().forEach(p -> p.setTeam(team));
         }
-        return teamMapper.toDto(teamRepository.save(entity));
+        return teamMapper.toDto(teamRepository.save(team));
     }
 
     @Override
