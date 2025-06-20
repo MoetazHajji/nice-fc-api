@@ -6,8 +6,8 @@ import lombok.*;
 import java.io.Serializable;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 public class PlayerDto implements Serializable {
     private Long id;
 

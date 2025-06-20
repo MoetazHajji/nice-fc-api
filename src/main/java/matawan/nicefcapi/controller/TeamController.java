@@ -1,5 +1,6 @@
 package matawan.nicefcapi.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +23,7 @@ public class TeamController {
 
 
     @PostMapping
-    public TeamDto create(@RequestBody TeamDto request) {
+    public TeamDto create(@Valid @RequestBody TeamDto request) {
         return teamService.save(request);
     }
 
