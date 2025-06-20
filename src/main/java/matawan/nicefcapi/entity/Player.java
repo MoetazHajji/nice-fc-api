@@ -3,6 +3,7 @@ package matawan.nicefcapi.entity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import matawan.nicefcapi.common.entities.IModel;
 
@@ -12,7 +13,9 @@ import matawan.nicefcapi.common.entities.IModel;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Player extends IModel {
+    @NotBlank
     String name;
+    @NotBlank
     String position;
 
     @ManyToOne

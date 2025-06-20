@@ -1,10 +1,13 @@
 package matawan.nicefcapi.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import matawan.nicefcapi.dto.TeamDto;
 import matawan.nicefcapi.interfaces.ITeamService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -12,16 +15,14 @@ import java.util.List;
 @RestController
 @RequestMapping("api/teams")
 @RequiredArgsConstructor
+@Validated
 public class TeamController {
     private final ITeamService teamService;
+    private static final Logger log = LoggerFactory.getLogger(TeamController.class);
+
 
     @PostMapping
     public TeamDto create(@RequestBody TeamDto request) {
-        System.out.println("team: " + request);
-        System.out.println("team name: " + request.getName());
-        System.out.println("acronym: " + request.getAcronym());
-        System.out.println("team budget: " + request.getBudget());
-        System.out.println("players controller: " + request.getPlayers());
         return teamService.save(request);
     }
 
