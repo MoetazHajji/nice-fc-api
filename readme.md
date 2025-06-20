@@ -1,81 +1,75 @@
 # ⚽ Nice FC API – Spring Boot REST Application
 
-Ce projet est une API REST développée avec **Spring Boot**, qui permet de gérer les équipes de football et leurs joueurs pour le club de **Nice**. Elle permet de :
-- Ajouter une équipe avec ou sans joueurs
-- Lister les équipes paginées avec tri
-- Étendre facilement les fonctionnalités (Bonus)
+Ce projet est une API REST développée avec **Spring Boot** (Java 21, JDK 21), qui permet de gérer les équipes de football et leurs joueurs pour le club de **Nice**. Il offre :
+- **CRUD** simplifié pour les équipes et joueurs (ajout avec ou sans joueurs)
+- **Liste paginée** et **tri dynamique** des équipes
+- **Validation** des entrées (JSR‑303) avec gestion centralisée des erreurs
+- **Services génériques** réutilisables pour mapping DTO ↔ Entity
 
 ---
 
 ## 🧰 Tech Stack
 
-| Composant         | Choix                                   |
-|------------------|-----------------------------------------|
-| Langage          | Java 21                                 |
-| Framework        | Spring Boot (Web, Data JPA, Validation) |
-| Base de données  | PostgreSQL                              |
-| ORM              | Hibernate                               |
-| Build tool       | Maven                                   |
-| Documentation    | Swagger (Springdoc OpenAPI)             |
-| Tests            | JUnit, Mockito                          |
+| Composant         | Choix                                    |
+|------------------|------------------------------------------|
+| Langage          | Java 21 / JDK 21                         |
+| Framework        | Spring Boot (Web, Data JPA, Validation)  |
+| Base de données  | PostgreSQL                               |
+| ORM              | Hibernate                                |
+| Build tool       | Maven                                    |
+| Tests            | JUnit 5, Mockito, MockMvc                |
 
 ---
 
-## 📦 Installation du projet
+## 📦 Installation
 
 ### 1. Cloner le repository
 ```bash
-git clone https://github.com/votre-utilisateur/nice-fc-api.git
+git clone https://github.com/MoetazHajji/nice-fc-api.git
 cd nice-fc-api
 ```
 
-### 2. Configuration de la base de données PostgreSQL
-
-Crée une base de données :
+### 2. Configurer PostgreSQL
 ```sql
-CREATE DATABASE nice_fc;
+CREATE DATABASE nicefcdb;
 ```
 
-Met à jour `src/main/resources/application.properties` :
+Configurer `src/main/resources/application.properties` :
 ```properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/nice_fc
+spring.application.name=nice-fc-api
+spring.datasource.url=jdbc:postgresql://localhost:5432/nicefcdb
 spring.datasource.username=postgres
-spring.datasource.password=mot_de_passe
+spring.datasource.password=admin
+server.port=9090
 
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=true
 spring.jpa.properties.hibernate.format_sql=true
+spring.jpa.open-in-view=false
+spring.jpa.properties.javax.persistence.validation.mode=none
+
 ```
 
----
-
-### 3. Lancer le projet
+### 3. Lancer l’application
 Via Maven :
 ```bash
 ./mvnw spring-boot:run
 ```
-Ou directement :
+Ou :
 ```bash
 java -jar target/nice-fc-api.jar
 ```
 
 ---
 
-### 4. Tester l’API
+## 🔍 Endpoints
 
-Une fois l'application lancée :
-- Swagger UI disponible à : [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
+| Méthode | URL           | Description                                      |
+|--------|---------------|--------------------------------------------------|
+| `GET`  | `/api/teams`  | Liste paginée triée des équipes + joueurs        |
+| `POST` | `/api/teams`  | Crée une équipe (option : liste vide de joueurs) |
 
----
-
-## 🔍 Endpoints de l’API
-
-| Méthode | URL                    | Description                                              |
-|---------|------------------------|----------------------------------------------------------|
-| `GET`   | `/api/teams`           | Retourne la liste paginée des équipes avec joueurs       |
-| `POST`  | `/api/teams`           | Ajoute une nouvelle équipe (avec ou sans joueurs)        |
-
-**Exemple JSON POST** :
+**Exemple POST** :
 ```json
 {
   "name": "OGC Nice",
@@ -92,36 +86,58 @@ Une fois l'application lancée :
 
 ## 🏗️ Architecture
 
-- `controller` : Gère les endpoints REST
-- `service` : Contient la logique métier
-- `repository` : Accès aux données avec JPA
-- `entity` : Représentation des tables SQL
-- `dto` : Objets de transfert pour requêtes/réponses
-- `exception` : Gestion centralisée des erreurs
+```
+controller  → service (business) → repository (JPA)
+  ↓              ↓                     ↓
+ DTOs ↔ mappers ⇆ Entities              DB
+```
+
+- **`dto/`**  : objets de requête/réponse
+- **`mappers/`** : MapStruct (DTO ↔ Entity)
+- **`service/`**: service générique + spécifique (logique métier)
+- **`controller/`**: couches REST
+- **`repository/`**: interfaces Spring Data JPA
+- **`entity/`**: modèles JPA
+- **`error/`**: gestion centralisée des exceptions et validation
 
 ---
 
-## ✅ Tests
+## ✅ Fonctionnalités clés
 
-Les tests unitaires et d’intégration sont disponibles sous `src/test/java/...`
+### 1. Mappers DTO ↔ Entity
+- **TeamMapper**, **PlayerMapper** avec `@Mapper(componentModel="spring")`
+- Listes imbriquées gérées via méthodes explicites `toPlayers()`, `toPlayerDtos()`
 
-- Frameworks utilisés : `JUnit 5`, `Mockito`
-- Tests couvrent :
-    - Services
-    - Repositories
-    - Endpoints REST (MockMvc)
+### 2. Service générique
+- **`AbstractService<Req, Res, T, ID>`**
+- Méthodes réutilisables `save()`, `getAll(Pageable, sortBy)`
+- Implémentation spécifique `TeamService` pour mapping + cascade joueurs
+
+### 3. Validation
+- JSR‑303 sur **DTOs** (`@NotBlank`, `@NotNull`, `@Size`, `@Valid`)
+- **GlobalExceptionHandler** pour renvoyer un JSON `ErrorResponse` structuré
+
+### 4. Tests
+- **Unit tests** (`TeamServiceTest`) avec Mockito pour :
+  - `save()` (cas normal + liste vide)
+  - `getAll()` paginé et trié
+- **Slice Integration** (`TeamControllerTest`) avec MockMvc pour :
+  - `POST /api/teams`
+  - `GET /api/teams`
+  - cas liste vide et absence de champ `players`
 
 ---
 
 ## ℹ️ Choix techniques
 
-- **Spring Boot** : Démarrage rapide et convention over configuration
-- **PostgreSQL** : Base relationnelle open source fiable
-- **Hibernate** : Intégration facile avec Spring Data JPA
-- **Springdoc** : Pour générer automatiquement la doc de l’API
+- **Spring Boot** : convention over configuration, starters intégrés
+- **MapStruct** : mappage rapide et typé, cycle de build
+- **JSR‑303** : validation au plus près du contrôleur
+- **JUnit 5 + Mockito** : tests unitaires et slice
 
 ---
 
 ## ⏱️ Temps passé
 
-> Environ X heures réparties entre conception, développement, test et documentation.
+> Environ 5 heures (conception, dev, validation, tests, documentation)
+
